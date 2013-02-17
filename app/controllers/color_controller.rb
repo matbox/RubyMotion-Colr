@@ -45,6 +45,20 @@ class ColorController < UIViewController
         [@add.frame.size.width, @color_view.frame.size.height]]
     self.view.addSubview(@add)
 
+    @add.when(UIControlEventTouchUpInside) do
+      @add.enabled=false
+      @text_field.enabled=false
+      self.color.add_tag(@text_field.text) do |tag|
+        if tag
+          refresh
+        else
+          @add.enabled=true
+          @text_field.enabled=true
+          @text_field.text = "Failed :("
+        end
+      end
+    end
+
     add_button_offset = @add.frame.size.width + 2*padding
     @text_field.frame = [
         text_field_origin,
@@ -71,5 +85,15 @@ class ColorController < UIViewController
         UITableViewCellStyleDefault, reuseIdentifier: @reuseIdentifier)
     cell.textLabel.text = self.color.tags[indexPath.row].name
     cell
+  end
+
+  def refresh
+    Color.find(self.color.hex) do |color|
+      self.color = color
+      @table_view.reloadData
+
+      @add.enabled=true
+      @text_field.enabled=true
+    end
   end
 end
